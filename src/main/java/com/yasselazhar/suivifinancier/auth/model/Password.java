@@ -1,4 +1,4 @@
-package com.yasselazha.suivifinancier.auth.model;
+package com.yasselazhar.suivifinancier.auth.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,12 +13,11 @@ import java.util.Date;
  * Created by Yassine EL-AZHAR
  */
 @Entity
-@Table(name = "token")
+@Table(name = "password")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"date_creation", "date_modification"},
         allowGetters = true)
-public class Token {
-	
+public class Password {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -27,10 +26,7 @@ public class Token {
     private String userId;
 
     @NotBlank
-    private String tokenContext;
-
-    @NotBlank
-    private String token;
+    private String password;
 
 
     @Column(nullable = false, updatable = false)
@@ -51,28 +47,20 @@ public class Token {
 		this.id = id;
 	}
 
-	public String getUserId() {
+	public String getUser_id() {
 		return userId;
 	}
 
-	public void setUserId(String userId) {
+	public void setUser_id(String userId) {
 		this.userId = userId;
 	}
 
-	public String getTokenContext() {
-		return tokenContext;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setTokenContext(String tokenContext) {
-		this.tokenContext = tokenContext;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public Date getDateCreation() {
@@ -93,9 +81,10 @@ public class Token {
 
 	@Override
 	public String toString() {
-		return "Token [id=" + id + ", userId=" + userId + ", tokenContext=" + tokenContext + ", token=" + token
-				+ ", dateCreation=" + dateCreation + ", dateModification=" + dateModification + "]";
+		return "Password [id=" + id + ", userId=" + userId + ", password=" + password + ", dateCreation="
+				+ dateCreation + ", dateModification=" + dateModification + "]";
 	}
+
     
 
 }
