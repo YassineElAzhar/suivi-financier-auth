@@ -1,4 +1,4 @@
-package com.yasselazha.suivifinancier.auth.controller;
+package com.yasselazhar.suivifinancier.auth.controller;
 
 
 import java.util.List;
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.yasselazha.suivifinancier.auth.constant.TokenContext;
-import com.yasselazha.suivifinancier.auth.model.User;
-import com.yasselazha.suivifinancier.auth.repository.UserRepository;
-import com.yasselazha.suivifinancier.auth.service.TokenService;
+import com.yasselazhar.suivifinancier.auth.constant.TokenContext;
+import com.yasselazhar.suivifinancier.auth.model.User;
+import com.yasselazhar.suivifinancier.auth.repository.UserRepository;
+import com.yasselazhar.suivifinancier.auth.service.TokenService;
 
 @RestController
 @RequestMapping("/suivi-financier-auth")

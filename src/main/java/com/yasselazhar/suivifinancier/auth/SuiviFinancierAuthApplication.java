@@ -1,4 +1,4 @@
-package com.yasselazha.suivifinancier.auth;
+package com.yasselazhar.suivifinancier.auth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

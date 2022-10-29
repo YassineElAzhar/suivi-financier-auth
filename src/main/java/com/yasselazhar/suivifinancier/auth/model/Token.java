@@ -1,4 +1,4 @@
-package com.yasselazha.suivifinancier.auth.model;
+package com.yasselazhar.suivifinancier.auth.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,11 +13,12 @@ import java.util.Date;
  * Created by Yassine EL-AZHAR
  */
 @Entity
-@Table(name = "password")
+@Table(name = "token")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"date_creation", "date_modification"},
         allowGetters = true)
-public class Password {
+public class Token {
+	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -26,7 +27,10 @@ public class Password {
     private String userId;
 
     @NotBlank
-    private String password;
+    private String tokenContext;
+
+    @NotBlank
+    private String token;
 
 
     @Column(nullable = false, updatable = false)
@@ -47,20 +51,28 @@ public class Password {
 		this.id = id;
 	}
 
-	public String getUser_id() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUser_id(String userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
-	public String getPassword() {
-		return password;
+	public String getTokenContext() {
+		return tokenContext;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setTokenContext(String tokenContext) {
+		this.tokenContext = tokenContext;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 	public Date getDateCreation() {
@@ -81,10 +93,9 @@ public class Password {
 
 	@Override
 	public String toString() {
-		return "Password [id=" + id + ", userId=" + userId + ", password=" + password + ", dateCreation="
-				+ dateCreation + ", dateModification=" + dateModification + "]";
+		return "Token [id=" + id + ", userId=" + userId + ", tokenContext=" + tokenContext + ", token=" + token
+				+ ", dateCreation=" + dateCreation + ", dateModification=" + dateModification + "]";
 	}
-
     
 
 }

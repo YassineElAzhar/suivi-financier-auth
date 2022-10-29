@@ -1,4 +1,4 @@
-package com.yasselazha.suivifinancier.auth.constant;
+package com.yasselazhar.suivifinancier.auth.constant;
 
 public enum TokenContext {
 	PASSWORD_INIT,

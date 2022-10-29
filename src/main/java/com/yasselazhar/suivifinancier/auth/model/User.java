@@ -1,4 +1,4 @@
-package com.yasselazha.suivifinancier.auth.model;
+package com.yasselazhar.suivifinancier.auth.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;

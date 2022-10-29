@@ -1,4 +1,4 @@
-package com.yasselazha.suivifinancier.auth.service;
+package com.yasselazhar.suivifinancier.auth.service;
 
 import java.util.Map;
 
