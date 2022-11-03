@@ -98,69 +98,75 @@ public class SuiviFinancierAuthHandler {
 	}
 	
 
-	public String activateProfil(String token, String password) {
+	public boolean activateProfil(String token, String password) {
 		boolean resultFlag = true;
-        Base64.Decoder decoder = Base64.getDecoder();
-        String validationRegEx = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[-+!*$@%_])([-+!*$@%_\\w]{8,25})$";
-        Token tokenDB = new Token();
-        User newUser = new User();
-        
-        //We convert the Base64 password to utf8 password
-        password = new String(decoder.decode(password));
-        Map<String,String> tokenDetails = tokenService.decryptToken(token);
-        
-		if((resultFlag) && (!password.matches(validationRegEx))) { resultFlag = false; }
+		try {
+			Base64.Decoder decoder = Base64.getDecoder();
+	        String validationRegEx = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[-+!*$@%_])([-+!*$@%_\\w]{8,25})$";
+	        Token tokenDB = new Token();
+	        User newUser = new User();
+	        
+	        //We convert the Base64 password to utf8 password
+	        password = new String(decoder.decode(password));
+	        Map<String,String> tokenDetails = tokenService.decryptToken(token);
+	        
+			if((resultFlag) && (!password.matches(validationRegEx))) { resultFlag = false; }
 
-		if((resultFlag) && (Objects.nonNull(userRepository.findById(Integer.valueOf(tokenDetails.get("userId")))))){
-			newUser = userRepository.findById(Integer.valueOf(tokenDetails.get("userId"))).orElse(new User());
-		} else { resultFlag = false; }
-		
-		if((resultFlag) && (Objects.nonNull(passwordRepository.findByUserId(tokenDetails.get("userId"))))) { resultFlag = false; }
-		
-		tokenDB = tokenRepository.findByUserId(tokenDetails.get("userId"));
-		
-		if((resultFlag) && (Objects.isNull(tokenDB.getId()))) { resultFlag = false; }
-		
-		if((resultFlag) && (tokenDB.getTokenContext().equalsIgnoreCase(tokenDetails.get("context")))){
-			Password newPassword = new Password();
+			if((resultFlag) && (Objects.nonNull(userRepository.findById(Integer.valueOf(tokenDetails.get("userId")))))){
+				newUser = userRepository.findById(Integer.valueOf(tokenDetails.get("userId"))).orElse(new User());
+			} else { resultFlag = false; }
 			
-			//TODO : mettre à jour le passwordService avec un bon système de hash
-			String hashPassword = passwordService.hashPassword(password);
-			newPassword.setPassword(hashPassword);
+			if((resultFlag) && (Objects.nonNull(passwordRepository.findByUserId(tokenDetails.get("userId"))))) { resultFlag = false; }
 			
-			newPassword.setUserId(tokenDetails.get("userId"));
-			newPassword = passwordRepository.save(newPassword);
+			tokenDB = tokenRepository.findByUserId(tokenDetails.get("userId"));
 			
-			newUser.setPassword(newPassword.getId());
-			newUser.setActif(1);
-			newUser.setDateModification(new Date());
-			newUser = userRepository.save(newUser);
+			if((resultFlag) && (Objects.isNull(tokenDB.getId()))) { resultFlag = false; }
 			
-			tokenRepository.deleteById(tokenDB.getId());
-			
+			if((resultFlag) && (tokenDB.getTokenContext().equalsIgnoreCase(tokenDetails.get("context")))){
+				Password newPassword = new Password();
+				
+				String hashPassword = passwordService.hashPassword(password);
+				newPassword.setPassword(hashPassword);
+				
+				newPassword.setUserId(tokenDetails.get("userId"));
+				newPassword = passwordRepository.save(newPassword);
+				
+				newUser.setPassword(newPassword.getId());
+				newUser.setActif(1);
+				newUser.setDateModification(new Date());
+				newUser = userRepository.save(newUser);
+				
+				tokenRepository.deleteById(tokenDB.getId());
+				
+			}
+		} catch (Exception e) {
+			resultFlag = false;
 		}
+        
 		
         
-        if(resultFlag) {
-        	return "OK";
-        } else {
-        	return "KO";
-        }
+        return resultFlag;
 	}
 	
 	
-	public String login(String emailUser, String password) {
-		User storedUser = userRepository.findByEmail(emailUser);
+	public boolean login(String emailUser, String password) {
 		boolean result = false;
-		if(Objects.nonNull(storedUser)) {
-			int userid = storedUser.getId();
-			Password storedPassword = passwordRepository.findByUserId(String.valueOf(userid));
-			if(Objects.nonNull(storedPassword)) {
-				result = passwordService.verifyPassword(password, storedPassword.getPassword());
+		try {
+	        Base64.Decoder decoder = Base64.getDecoder();
+	        //We convert the Base64 password to utf8 password
+	        password = new String(decoder.decode(password));
+			User storedUser = userRepository.findByEmail(emailUser);
+			if(Objects.nonNull(storedUser)) {
+				int userid = storedUser.getId();
+				Password storedPassword = passwordRepository.findByUserId(String.valueOf(userid));
+				if(Objects.nonNull(storedPassword)) {
+					result = passwordService.verifyPassword(password, storedPassword.getPassword());
+				}
 			}
+		} catch (Exception e) {
+			result = false;
 		}
-		System.out.println(String.valueOf(result));
-		return "ok";
+		return result;
 	}
 	
 	

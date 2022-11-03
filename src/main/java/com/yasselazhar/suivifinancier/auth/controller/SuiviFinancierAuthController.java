@@ -51,12 +51,12 @@ public class SuiviFinancierAuthController {
     }
     
     @RequestMapping(value="/activateProfil",method = RequestMethod.POST) 
-    public String activateProfil(@RequestParam(value="token") String token, @RequestParam(value="password") String password) {
+    public boolean activateProfil(@RequestParam(value="token") String token, @RequestParam(value="password") String password) {
     	return suiviFinancierAuthHandler.activateProfil(token, password);
     }
     
     @RequestMapping(value="/login",method = RequestMethod.POST)
-    public String login(@RequestParam(value = "emailUser")  String emailUser,@RequestParam(value = "password") String password) {
+    public boolean login(@RequestParam(value = "emailUser")  String emailUser,@RequestParam(value = "password") String password) {
     	return suiviFinancierAuthHandler.login(emailUser, password);
     }
 
