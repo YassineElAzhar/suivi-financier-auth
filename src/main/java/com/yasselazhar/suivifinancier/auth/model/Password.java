@@ -47,11 +47,11 @@ public class Password {
 		this.id = id;
 	}
 
-	public String getUser_id() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUser_id(String userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 

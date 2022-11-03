@@ -1,19 +1,23 @@
 package com.yasselazhar.suivifinancier.auth.handler;
 
+import java.util.Base64;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 
 import com.yasselazhar.suivifinancier.auth.constant.TokenContext;
 import com.yasselazhar.suivifinancier.auth.entity.EmailDetails;
+import com.yasselazhar.suivifinancier.auth.model.Password;
 import com.yasselazhar.suivifinancier.auth.model.Token;
 import com.yasselazhar.suivifinancier.auth.model.User;
+import com.yasselazhar.suivifinancier.auth.repository.PasswordRepository;
 import com.yasselazhar.suivifinancier.auth.repository.TokenRepository;
 import com.yasselazhar.suivifinancier.auth.repository.UserRepository;
 import com.yasselazhar.suivifinancier.auth.service.EmailService;
+import com.yasselazhar.suivifinancier.auth.service.PasswordService;
 import com.yasselazhar.suivifinancier.auth.service.TokenService;
 
 @Configuration
@@ -24,22 +28,29 @@ public class SuiviFinancierAuthHandler {
     
     @Autowired
     TokenRepository tokenRepository;
+    
+    @Autowired
+    PasswordRepository passwordRepository;
 
     @Autowired
     TokenService tokenService;
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    PasswordService passwordService;
     
 	public SuiviFinancierAuthHandler() {}
 	
 	
-	public HttpStatus createProfil(Map<String,String> userDetails) {
-
+	public String createProfil(Map<String,String> userDetails) {
 		User newUser = new User();
 		Token newToken = new Token();
 		EmailDetails emailDetails = new EmailDetails();
 		String tokenContext = TokenContext.PASSWORD_INIT.toString();
+		String tokenResult = "";
+		
 		if(Objects.isNull(userRepository.findByEmail(userDetails.get("email")))) {
 			//Here we  gone to set the logic for the account creation
 			
@@ -64,17 +75,92 @@ public class SuiviFinancierAuthHandler {
 	    	emailDetails.setSubject("Nouveau Token");
 	    	emailDetails.setMsgBody(token);
 	    	emailDetails.setRecipient("yassine.elazhar@gmail.com");
-	    	emailService.sendSimpleMail(emailDetails);
+	    	/*Nous allons envoyer le mail*/
+	    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
 	    	
-	    	
-			System.out.println("user null");
-		}
+	    	tokenResult = newToken.getToken();
+		} else {
+			// We gone to check if we have a token for this user
+			newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(userDetails.get("email")).getId()));
+			if((Objects.nonNull(newToken)) && (newToken.getTokenContext().equalsIgnoreCase(tokenContext))){
+				Map<String,String> tokenDetails = tokenService.decryptToken(newToken.getToken());
+				if((new Date(Long.valueOf(tokenDetails.get("expiryDate")))).before(new Date())) {
+					tokenResult = newToken.getToken();
+				} else {
+					tokenResult = "error";
+				}
+			} else {
+				tokenResult = "error";
+			}
+			
+		}		
+		return tokenResult;
+	}
+	
 
+	public String activateProfil(String token, String password) {
+		boolean resultFlag = true;
+        Base64.Decoder decoder = Base64.getDecoder();
+        String validationRegEx = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[-+!*$@%_])([-+!*$@%_\\w]{8,25})$";
+        Token tokenDB = new Token();
+        User newUser = new User();
+        
+        //We convert the Base64 password to utf8 password
+        password = new String(decoder.decode(password));
+        Map<String,String> tokenDetails = tokenService.decryptToken(token);
+        
+		if((resultFlag) && (!password.matches(validationRegEx))) { resultFlag = false; }
+
+		if((resultFlag) && (Objects.nonNull(userRepository.findById(Integer.valueOf(tokenDetails.get("userId")))))){
+			newUser = userRepository.findById(Integer.valueOf(tokenDetails.get("userId"))).orElse(new User());
+		} else { resultFlag = false; }
 		
+		if((resultFlag) && (Objects.nonNull(passwordRepository.findByUserId(tokenDetails.get("userId"))))) { resultFlag = false; }
 		
+		tokenDB = tokenRepository.findByUserId(tokenDetails.get("userId"));
 		
-		return HttpStatus.OK;
+		if((resultFlag) && (Objects.isNull(tokenDB.getId()))) { resultFlag = false; }
 		
+		if((resultFlag) && (tokenDB.getTokenContext().equalsIgnoreCase(tokenDetails.get("context")))){
+			Password newPassword = new Password();
+			
+			//TODO : mettre à jour le passwordService avec un bon système de hash
+			String hashPassword = passwordService.hashPassword(password);
+			newPassword.setPassword(hashPassword);
+			
+			newPassword.setUserId(tokenDetails.get("userId"));
+			newPassword = passwordRepository.save(newPassword);
+			
+			newUser.setPassword(newPassword.getId());
+			newUser.setActif(1);
+			newUser.setDateModification(new Date());
+			newUser = userRepository.save(newUser);
+			
+			tokenRepository.deleteById(tokenDB.getId());
+			
+		}
+		
+        
+        if(resultFlag) {
+        	return "OK";
+        } else {
+        	return "KO";
+        }
+	}
+	
+	
+	public String login(String emailUser, String password) {
+		User storedUser = userRepository.findByEmail(emailUser);
+		boolean result = false;
+		if(Objects.nonNull(storedUser)) {
+			int userid = storedUser.getId();
+			Password storedPassword = passwordRepository.findByUserId(String.valueOf(userid));
+			if(Objects.nonNull(storedPassword)) {
+				result = passwordService.verifyPassword(password, storedPassword.getPassword());
+			}
+		}
+		System.out.println(String.valueOf(result));
+		return "ok";
 	}
 	
 	

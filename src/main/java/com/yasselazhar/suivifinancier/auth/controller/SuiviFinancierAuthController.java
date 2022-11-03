@@ -2,22 +2,15 @@ package com.yasselazhar.suivifinancier.auth.controller;
 
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.yasselazhar.suivifinancier.auth.constant.TokenContext;
 import com.yasselazhar.suivifinancier.auth.handler.SuiviFinancierAuthHandler;
-import com.yasselazhar.suivifinancier.auth.model.User;
-import com.yasselazhar.suivifinancier.auth.repository.UserRepository;
-import com.yasselazhar.suivifinancier.auth.service.TokenService;
 
 @RestController
 @RequestMapping("/suivi-financier-auth")
@@ -26,18 +19,12 @@ public class SuiviFinancierAuthController {
 	
     @Autowired
     SuiviFinancierAuthHandler suiviFinancierAuthHandler;
-    
-
-    @Autowired
-    UserRepository userRepository;
-    
-    @Autowired
-    TokenService tokenService;
-
-    @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+   
+    //REST conventions
+    	//GET : to get a data
+		//POST : to create something or for login
+		//PUT : to update something
+		//DELETE : to remove something
     
     @RequestMapping(value="/createUser",method = RequestMethod.POST) 
     public String createUser( 
@@ -59,19 +46,18 @@ public class SuiviFinancierAuthController {
     	userDetails.put("ville", ville);
     	userDetails.put("zip", zip);
     	userDetails.put("typeProfile", typeProfile);
-    	suiviFinancierAuthHandler.createProfil(userDetails);
-    	return "hohoho";
+    	String token = suiviFinancierAuthHandler.createProfil(userDetails);
+    	return token;
     }
     
-    @GetMapping("/encryptToken")
-    public String encryptToken() {
-    	return tokenService.encryptToken("1","yassine.elazhar@gmail.com", TokenContext.PASSWORD_INIT.toString());
+    @RequestMapping(value="/activateProfil",method = RequestMethod.POST) 
+    public String activateProfil(@RequestParam(value="token") String token, @RequestParam(value="password") String password) {
+    	return suiviFinancierAuthHandler.activateProfil(token, password);
     }
     
-        
-    @GetMapping("/decryptToken/{token}")
-    public Map<String, String> decryptToken(@PathVariable(value = "token") String token) {
-    	return tokenService.decryptToken(token);
+    @RequestMapping(value="/login",method = RequestMethod.POST)
+    public String login(@RequestParam(value = "emailUser")  String emailUser,@RequestParam(value = "password") String password) {
+    	return suiviFinancierAuthHandler.login(emailUser, password);
     }
 
     

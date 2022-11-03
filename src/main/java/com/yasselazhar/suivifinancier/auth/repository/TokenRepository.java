@@ -8,5 +8,5 @@ import com.yasselazhar.suivifinancier.auth.model.Token;
 
 @Repository
 public interface TokenRepository extends JpaRepository<Token, Integer> {
-
+	Token findByUserId(String userId);
 }

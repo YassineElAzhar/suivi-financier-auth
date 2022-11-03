@@ -50,6 +50,7 @@ public class EmailServiceImpl implements EmailService {
  
         // Catch block to handle the exceptions
         catch (Exception e) {
+        	//e.printStackTrace();
             return "Error while Sending Mail";
         }
     }
