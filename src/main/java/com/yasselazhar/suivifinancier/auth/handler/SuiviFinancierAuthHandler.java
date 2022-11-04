@@ -43,27 +43,21 @@ public class SuiviFinancierAuthHandler {
     
 	public SuiviFinancierAuthHandler() {}
 	
-	
-	public String createProfil(Map<String,String> userDetails) {
-		User newUser = new User();
+	public String createProfil(User newUser) {
 		Token newToken = new Token();
 		EmailDetails emailDetails = new EmailDetails();
 		String tokenContext = TokenContext.PASSWORD_INIT.toString();
 		String tokenResult = "";
 		
-		if(Objects.isNull(userRepository.findByEmail(userDetails.get("email")))) {
+		if(Objects.isNull(userRepository.findByEmail(newUser.getEmail()))) {
 			//Here we  gone to set the logic for the account creation
 			
 			// new account creation
+			newUser.setId(0);
+			newUser.setPassword(0);
+			newUser.setDateCreation(null);
+			newUser.setDateModification(null);
 			newUser.setActif(0);
-			newUser.setEmail(userDetails.get("email"));
-			newUser.setNom(userDetails.get("nom"));
-			newUser.setPrenom(userDetails.get("prenom"));
-	    	newUser.setDateNaissance(userDetails.get("dateNaissance"));
-			newUser.setAdresse(userDetails.get("adresse"));
-			newUser.setVille(userDetails.get("ville"));
-			newUser.setZip(userDetails.get("zip"));
-			newUser.setTypeProfil(Integer.valueOf(userDetails.get("typeProfile")));
 			newUser = userRepository.save(newUser);
 			
 			String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
@@ -81,7 +75,7 @@ public class SuiviFinancierAuthHandler {
 	    	tokenResult = newToken.getToken();
 		} else {
 			// We gone to check if we have a token for this user
-			newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(userDetails.get("email")).getId()));
+			newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(newUser.getEmail()).getId()));
 			if((Objects.nonNull(newToken)) && (newToken.getTokenContext().equalsIgnoreCase(tokenContext))){
 				Map<String,String> tokenDetails = tokenService.decryptToken(newToken.getToken());
 				if((new Date(Long.valueOf(tokenDetails.get("expiryDate")))).before(new Date())) {
@@ -96,7 +90,6 @@ public class SuiviFinancierAuthHandler {
 		}		
 		return tokenResult;
 	}
-	
 
 	public boolean activateProfil(String token, String password) {
 		boolean resultFlag = true;
@@ -148,7 +141,6 @@ public class SuiviFinancierAuthHandler {
         return resultFlag;
 	}
 	
-	
 	public boolean login(String emailUser, String password) {
 		boolean result = false;
 		try {
@@ -169,6 +161,94 @@ public class SuiviFinancierAuthHandler {
 		return result;
 	}
 	
+	public User getUser(String user) {
+		User storedUser = new User();
+		storedUser = userRepository.findByEmail(user);
+		
+		//we hide some values
+		storedUser.setPassword(0);
+		storedUser.setDateCreation(null);
+		storedUser.setDateModification(null);
+		
+		return storedUser;
+	}
+	
+	public User updateUser(User user) {
+		User newStoredUser = userRepository.findByEmail(user.getEmail());
+		if(Objects.nonNull(newStoredUser)) {
+			if(user.getAdresse() != null) {
+				newStoredUser.setAdresse(user.getAdresse());
+			}
+			if(user.getVille() != null) {
+				newStoredUser.setVille(user.getVille());
+			}
+			if(user.getZip() != null) {
+				newStoredUser.setZip(user.getZip());
+			}
+			if(user.getDateNaissance() != null) {
+				newStoredUser.setDateNaissance(user.getDateNaissance());
+			}
+			if(user.getNom() != null) {
+				newStoredUser.setNom(user.getNom());
+			}
+			if(user.getPrenom() != null) {
+				newStoredUser.setPrenom(user.getPrenom());
+			}
+			userRepository.save(newStoredUser);
+			
+			//We hide some values
+			newStoredUser.setPassword(0);
+			newStoredUser.setDateCreation(null);
+			newStoredUser.setDateModification(null);
+		} else {
+			newStoredUser = new User();
+		}
+		
+		return newStoredUser;
+	}
+	
+	public String removeUser(int id, String email) {
+		String tokenContext = TokenContext.USER_DELETE.toString();
+		String token = "";
+		User userToRemove = userRepository.findByEmail(email);
+		if(Objects.nonNull(userToRemove) && Objects.isNull(tokenRepository.findByUserId(String.valueOf(id)))) {
+			if(userToRemove.getId() == id) {
+				token = tokenService.encryptToken(String.valueOf(id), email, tokenContext);
+				Token storedToken = new Token();
+				storedToken.setToken(token);
+				storedToken.setTokenContext(tokenContext);
+				storedToken.setUserId(String.valueOf(id));
+				tokenRepository.save(storedToken);
+			}
+		}
+		
+		return token;
+	}
+
+	public boolean removeUserApproved(int id, String email, String token) {
+		boolean result = false;
+		try {
+			String tokenContext = TokenContext.USER_DELETE.toString();
+			
+			Map<String,String> tokenDecrypted = tokenService.decryptToken(token);
+			if(tokenDecrypted.get("context").equalsIgnoreCase(tokenContext)
+				&& tokenDecrypted.get("email").equalsIgnoreCase(email)
+				&& tokenDecrypted.get("userId").equalsIgnoreCase(String.valueOf(id))){
+				Token storedToken = tokenRepository.findByUserId(String.valueOf(id));
+				
+				if(storedToken.getToken().equalsIgnoreCase(token)) {
+					tokenRepository.delete(storedToken);
+					userRepository.deleteById(id);
+					result = true;
+				}
+			}
+		} catch (Exception e) {
+			result = false;
+		}
+		
+		
+		return result;
+	}
 	
 	
 }

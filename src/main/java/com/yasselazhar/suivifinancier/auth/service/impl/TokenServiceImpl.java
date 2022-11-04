@@ -129,7 +129,7 @@ public class TokenServiceImpl implements TokenService {
 	        mapTokenDecrypted.put(val4Split[0], val4ClearText);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 	        mapTokenDecrypted.put("context", "error");
 	        mapTokenDecrypted.put("creationDate", "1900-01-01");
 	        mapTokenDecrypted.put("expiryDate", "1900-01-01");
