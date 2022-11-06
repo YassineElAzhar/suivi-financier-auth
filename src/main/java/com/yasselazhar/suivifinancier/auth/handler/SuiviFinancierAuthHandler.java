@@ -246,9 +246,67 @@ public class SuiviFinancierAuthHandler {
 			result = false;
 		}
 		
+		return result;
+	}
+	
+	public String updateEmail(int userId, String oldEmail, String newEmail) {
+		String tokenContext = TokenContext.EMAIL_UPDATE.toString();
+
+		String token = "";
+		if(!oldEmail.equalsIgnoreCase(newEmail)) {
+			User userToUpdate = userRepository.findByEmail(oldEmail);
+			if(Objects.nonNull(userToUpdate) && Objects.isNull(tokenRepository.findByUserId(String.valueOf(userId)))) {
+				if(userToUpdate.getId() == userId) {
+					token = tokenService.encryptToken(String.valueOf(userId), newEmail, tokenContext);
+					Token storedToken = new Token();
+					storedToken.setToken(token);
+					storedToken.setTokenContext(tokenContext);
+					storedToken.setUserId(String.valueOf(userId));
+					tokenRepository.save(storedToken);
+
+					/*
+					EmailDetails emailDetails = new EmailDetails();
+					emailDetails.setRecipient(newEmail);
+					emailDetails.setSubject("change email");
+					emailDetails.setMsgBody(token);
+					
+					emailService.sendSimpleMail(emailDetails);
+					*/			
+				}
+			}
+		}
+		
+		return token;
+	}
+	
+	public boolean updateEmailApproved(String token) {
+
+		boolean result = false;
+		try {
+			String tokenContext = TokenContext.EMAIL_UPDATE.toString();
+			
+			Map<String,String> tokenDecrypted = tokenService.decryptToken(token);
+			if(tokenDecrypted.get("context").equalsIgnoreCase(tokenContext)){
+				Token storedToken = tokenRepository.findByUserId(String.valueOf(tokenDecrypted.get("userId")));
+				
+				if((Objects.nonNull(storedToken)) && (storedToken.getToken().equalsIgnoreCase(token)))  {
+					tokenRepository.delete(storedToken);
+					User storedUser = userRepository.findById(Integer.valueOf(tokenDecrypted.get("userId"))).orElse(new User());
+					if(Objects.nonNull(storedUser.getId())) {
+						storedUser.setEmail(tokenDecrypted.get("email"));
+						userRepository.save(storedUser);
+					}
+					result = true;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = false;
+		}
 		
 		return result;
 	}
+	
 	
 	
 }

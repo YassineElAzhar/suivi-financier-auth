@@ -62,7 +62,6 @@ public class SuiviFinancierAuthController {
 		}
     }
 
-
     @GetMapping("/getUser/{email}")
     public ResponseEntity<User> getUser(@PathVariable(value = "email") String email) {
     	try {
@@ -84,7 +83,9 @@ public class SuiviFinancierAuthController {
     }
     
     @DeleteMapping(value = "/removeUser")
-    public ResponseEntity<String> removeUser(@RequestParam(value = "id")  int id, @RequestParam(value = "email")  String email) {
+    public ResponseEntity<String> removeUser(
+    		@RequestParam(value = "id")  int id, 
+    		@RequestParam(value = "email")  String email) {
     	try {
         	String result = suiviFinancierAuthHandler.removeUser(id, email);
             return new ResponseEntity<>(result, HttpStatus.OK);
@@ -105,5 +106,32 @@ public class SuiviFinancierAuthController {
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
     }
+
+    @RequestMapping(value="/updateEmail",method = RequestMethod.POST)
+    public ResponseEntity<String> updateEmail(
+    		@RequestParam(value = "userId")  int userId, 
+    		@RequestParam(value = "oldEmail")  String oldEmail, 
+    		@RequestParam(value = "newEmail")  String newEmail){
+    	String token = "";
+    	try {
+    		token = suiviFinancierAuthHandler.updateEmail(userId, oldEmail, newEmail);
+		} catch (Exception e) {
+	        return new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    	
+        return new ResponseEntity<>(token, HttpStatus.OK);
+    }
+
+    @RequestMapping(value="/updateEmailApproved",method = RequestMethod.POST)
+    public ResponseEntity<Boolean> updateEmailApproved(@RequestParam(value = "token")  String token){
+    	boolean result = false;
+    	try {
+    		result = suiviFinancierAuthHandler.updateEmailApproved(token);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+    
     
 }
