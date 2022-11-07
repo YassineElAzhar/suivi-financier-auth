@@ -34,20 +34,20 @@ public class SuiviFinancierAuthController {
 		//DELETE : to remove something
      
 
-    @RequestMapping(value="/createUser",method = RequestMethod.POST) 
-    public ResponseEntity<String> createUser(@RequestBody User user) {
+    @RequestMapping(value="/createProfile",method = RequestMethod.POST) 
+    public ResponseEntity<String> createProfile(@RequestBody User user) {
     	try {
-        	String token = suiviFinancierAuthHandler.createProfil(user);
+        	String token = suiviFinancierAuthHandler.createProfile(user);
             return new ResponseEntity<>(token, HttpStatus.OK);
 		} catch (Exception e) {
             return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
     }
     
-    @RequestMapping(value="/activateProfil",method = RequestMethod.POST) 
-    public ResponseEntity<Boolean> activateProfil(@RequestParam(value="token") String token, @RequestParam(value="password") String password) {
+    @RequestMapping(value="/activateProfile",method = RequestMethod.POST) 
+    public ResponseEntity<Boolean> activateProfile(@RequestParam(value="token") String token, @RequestParam(value="password") String password) {
     	try {
-        	boolean result = suiviFinancierAuthHandler.activateProfil(token, password);
+        	boolean result = suiviFinancierAuthHandler.activateProfile(token, password);
             return new ResponseEntity<>(result, HttpStatus.OK);
 		} catch (Exception e) {
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -170,7 +170,6 @@ public class SuiviFinancierAuthController {
 		}
     }
     
-
     @RequestMapping(value="/passwordForget",method = RequestMethod.POST)
     public ResponseEntity<String> passwordForget(@RequestParam(value = "email")  String email){
     	String token = "";
@@ -183,7 +182,6 @@ public class SuiviFinancierAuthController {
         return new ResponseEntity<>(token, HttpStatus.OK);
     }
     
-
     @RequestMapping(value="/passowrdForgetApproved",method = RequestMethod.POST)
     public ResponseEntity<Boolean> passowrdForgetApproved(
     		@RequestParam(value = "email")  String email,
@@ -199,5 +197,56 @@ public class SuiviFinancierAuthController {
 		}
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+    
+    @RequestMapping(value="/deactivateProfile",method = RequestMethod.POST)
+    public ResponseEntity<String> deactivateProfile(
+    		@RequestParam(value = "userId")  int userId,
+    		@RequestParam(value = "email")  String email){
+    	String token = "";
+    	try {
+    		token = suiviFinancierAuthHandler.deactivateProfile(userId, email);
+		} catch (Exception e) {
+	        return new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    	
+        return new ResponseEntity<>(token, HttpStatus.OK);
+    }
+    
+    @RequestMapping(value="/deactivateProfileApproved",method = RequestMethod.POST)
+    public ResponseEntity<Boolean> deactivateProfileApproved(@RequestParam(value = "token")  String token){
+    	boolean result = false;
+    	try {
+    		result = suiviFinancierAuthHandler.deactivateProfileApproved(token);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+    
+    
+
+    @RequestMapping(value="/reactivateProfile",method = RequestMethod.POST)
+    public ResponseEntity<String> reactivateProfile(@RequestParam(value = "email")  String email){
+    	String token = "";
+    	try {
+    		token = suiviFinancierAuthHandler.reactivateProfile(email);
+		} catch (Exception e) {
+	        return new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    	
+        return new ResponseEntity<>(token, HttpStatus.OK);
+    }
+    
+    @RequestMapping(value="/reactivateProfileApproved",method = RequestMethod.POST)
+    public ResponseEntity<Boolean> reactivateProfileApproved(@RequestParam(value = "token")  String token){
+    	boolean result = false;
+    	try {
+    		result = suiviFinancierAuthHandler.reactivateProfileApproved(token);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+    
     
 }

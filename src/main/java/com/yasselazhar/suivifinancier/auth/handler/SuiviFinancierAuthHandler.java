@@ -55,7 +55,7 @@ public class SuiviFinancierAuthHandler {
     
 	public SuiviFinancierAuthHandler() {}
 	
-	public String createProfil(User newUser) {
+	public String createProfile(User newUser) {
 		Token newToken = new Token();
 		EmailDetails emailDetails = new EmailDetails();
 		String tokenContext = TokenContext.PASSWORD_INIT.toString();
@@ -103,7 +103,7 @@ public class SuiviFinancierAuthHandler {
 		return tokenResult;
 	}
 
-	public boolean activateProfil(String token, String password) {
+	public boolean activateProfile(String token, String password) {
 		boolean resultFlag = true;
 		try {
 			Base64.Decoder decoder = Base64.getDecoder();
@@ -445,13 +445,133 @@ public class SuiviFinancierAuthHandler {
 				}
 			}
 		}
-		
-		
-		
-		
+		return result;
+	}
+	
+	public String deactivateProfile(int userId, String email) {
+		String tokenContext = TokenContext.DEACTIVATE_USER.toString();
 
+		String token = "";
+		User storedUser = userRepository.findByEmail(email);
+		if((Objects.nonNull(storedUser) && storedUser.getId() == userId)
+			&& (Objects.isNull(tokenRepository.findByUserId(String.valueOf(storedUser.getId()))))
+			&& (Objects.isNull(tokenRepository.findByTokenContextAndUserId(tokenContext,String.valueOf(storedUser.getId()))))) {
+			
+			token = tokenService.encryptToken(String.valueOf(storedUser.getId()), email, tokenContext);
+			Token storedToken = new Token();
+			storedToken.setToken(token);
+			storedToken.setTokenContext(tokenContext);
+			storedToken.setUserId(String.valueOf(storedUser.getId()));
+			tokenRepository.save(storedToken);
+
+			/*
+			//Envoyer un mail sur une page qui appelera ask question
+			EmailDetails emailDetails = new EmailDetails();
+			emailDetails.setRecipient(email);
+			emailDetails.setSubject("desactivate account");
+			emailDetails.setMsgBody(token);
+			
+			emailService.sendSimpleMail(emailDetails);
+			*/
+		}
+		
+		return token;
+	}
+	
+	public boolean deactivateProfileApproved(String token) {
+		boolean result = false;
+		try {
+			String tokenContext = TokenContext.DEACTIVATE_USER.toString();
+			
+			Map<String,String> tokenDecrypted = tokenService.decryptToken(token);
+			if(tokenDecrypted.get("context").equalsIgnoreCase(tokenContext)){
+				Token storedToken = tokenRepository.findByUserId(String.valueOf(tokenDecrypted.get("userId")));
+				
+				if((Objects.nonNull(storedToken)) && (storedToken.getToken().equalsIgnoreCase(token)))  {
+					tokenRepository.delete(storedToken);
+					User storedUser = userRepository.findById(Integer.valueOf(tokenDecrypted.get("userId"))).orElse(new User());
+
+					if((new Date(Long.valueOf(tokenDecrypted.get("expiryDate")))).after(new Date())){
+		
+						if(Objects.nonNull(storedUser.getId())) {
+							storedUser.setActif(0);
+							userRepository.save(storedUser);
+						}
+						result = true;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = false;
+		}
 		
 		return result;
 	}
+
+	public String reactivateProfile(String email) {
+		String tokenContext = TokenContext.ACTIVATE_USER.toString();
+
+		String token = "";
+		User storedUser = userRepository.findByEmail(email);
+		if((Objects.nonNull(storedUser))
+			&& (Objects.isNull(tokenRepository.findByUserId(String.valueOf(storedUser.getId()))))
+			&& (Objects.isNull(tokenRepository.findByTokenContextAndUserId(tokenContext,String.valueOf(storedUser.getId()))))) {
+			
+			token = tokenService.encryptToken(String.valueOf(storedUser.getId()), email, tokenContext);
+			Token storedToken = new Token();
+			storedToken.setToken(token);
+			storedToken.setTokenContext(tokenContext);
+			storedToken.setUserId(String.valueOf(storedUser.getId()));
+			tokenRepository.save(storedToken);
+
+			/*
+			//Envoyer un mail sur une page qui appelera ask question
+			EmailDetails emailDetails = new EmailDetails();
+			emailDetails.setRecipient(email);
+			emailDetails.setSubject("desactivate account");
+			emailDetails.setMsgBody(token);
+			
+			emailService.sendSimpleMail(emailDetails);
+			*/
+		}
+		
+		return token;
+	}
+	
+	
+
+	
+	public boolean reactivateProfileApproved(String token) {
+		boolean result = false;
+		try {
+			String tokenContext = TokenContext.ACTIVATE_USER.toString();
+			
+			Map<String,String> tokenDecrypted = tokenService.decryptToken(token);
+			if(tokenDecrypted.get("context").equalsIgnoreCase(tokenContext)){
+				Token storedToken = tokenRepository.findByUserId(String.valueOf(tokenDecrypted.get("userId")));
+				
+				if((Objects.nonNull(storedToken)) && (storedToken.getToken().equalsIgnoreCase(token)))  {
+					tokenRepository.delete(storedToken);
+					User storedUser = userRepository.findById(Integer.valueOf(tokenDecrypted.get("userId"))).orElse(new User());
+
+					if((new Date(Long.valueOf(tokenDecrypted.get("expiryDate")))).after(new Date())){
+		
+						if(Objects.nonNull(storedUser.getId())) {
+							storedUser.setActif(1);
+							userRepository.save(storedUser);
+						}
+						result = true;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = false;
+		}
+		
+		return result;
+	}
+	
 	
 }
