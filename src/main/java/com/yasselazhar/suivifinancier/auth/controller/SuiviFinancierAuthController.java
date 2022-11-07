@@ -1,5 +1,6 @@
 package com.yasselazhar.suivifinancier.auth.controller;
 
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.yasselazhar.suivifinancier.auth.handler.SuiviFinancierAuthHandler;
+import com.yasselazhar.suivifinancier.auth.model.SecureQuestion;
 import com.yasselazhar.suivifinancier.auth.model.User;
 
 @RestController
@@ -132,6 +134,70 @@ public class SuiviFinancierAuthController {
 		}
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+    @GetMapping("/getListOfQuestions")
+    public ResponseEntity<List<SecureQuestion>> getListOfQuestions() {
+    	try {
+            List<SecureQuestion> secureQuestions = suiviFinancierAuthHandler.getSecureQuestions();
+	        return new ResponseEntity<>(secureQuestions, HttpStatus.OK);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    }
+
+    @RequestMapping(value="/addUserQuestionResponse",method = RequestMethod.POST)
+    public ResponseEntity<Boolean> addNewQuestion(
+    		@RequestParam(value = "userId") int userId, 
+    		@RequestParam(value = "questionId") int questionId,
+    		@RequestParam(value = "question") String question, 
+    		@RequestParam(value = "response") String response){
+    	boolean result = false;
+    	try {
+			result = suiviFinancierAuthHandler.addUserQuestionResponse(userId, questionId, question, response);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(false, HttpStatus.OK);
+		}
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/askSecureQuestion/{email}")
+    public ResponseEntity<SecureQuestion> askSecureQuestion(@PathVariable(value = "email") String email) {
+    	try {
+            SecureQuestion secureQuestions = suiviFinancierAuthHandler.askSecureQuestion(email);
+	        return new ResponseEntity<>(secureQuestions, HttpStatus.OK);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    }
     
+
+    @RequestMapping(value="/passwordForget",method = RequestMethod.POST)
+    public ResponseEntity<String> passwordForget(@RequestParam(value = "email")  String email){
+    	String token = "";
+    	try {
+    		token = suiviFinancierAuthHandler.passwordForget(email);
+		} catch (Exception e) {
+	        return new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    	
+        return new ResponseEntity<>(token, HttpStatus.OK);
+    }
+    
+
+    @RequestMapping(value="/passowrdForgetApproved",method = RequestMethod.POST)
+    public ResponseEntity<Boolean> passowrdForgetApproved(
+    		@RequestParam(value = "email")  String email,
+    		@RequestParam(value = "token")  String token,
+    		@RequestParam(value = "secureQuestionId")  int secureQuestionId,
+    		@RequestParam(value = "response")  String response,
+    		@RequestParam(value = "newPassword")  String newPassword){
+    	boolean result = false;
+    	try {
+    		result = suiviFinancierAuthHandler.passowrdForgetApproved(email, token, secureQuestionId, response, newPassword);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
     
 }

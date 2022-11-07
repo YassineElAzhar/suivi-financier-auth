@@ -2,8 +2,10 @@ package com.yasselazhar.suivifinancier.auth.handler;
 
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -11,9 +13,13 @@ import org.springframework.context.annotation.Configuration;
 import com.yasselazhar.suivifinancier.auth.constant.TokenContext;
 import com.yasselazhar.suivifinancier.auth.entity.EmailDetails;
 import com.yasselazhar.suivifinancier.auth.model.Password;
+import com.yasselazhar.suivifinancier.auth.model.SecureQuestion;
+import com.yasselazhar.suivifinancier.auth.model.SecureResponse;
 import com.yasselazhar.suivifinancier.auth.model.Token;
 import com.yasselazhar.suivifinancier.auth.model.User;
 import com.yasselazhar.suivifinancier.auth.repository.PasswordRepository;
+import com.yasselazhar.suivifinancier.auth.repository.SecureQuestionRepository;
+import com.yasselazhar.suivifinancier.auth.repository.SecureResponseRepository;
 import com.yasselazhar.suivifinancier.auth.repository.TokenRepository;
 import com.yasselazhar.suivifinancier.auth.repository.UserRepository;
 import com.yasselazhar.suivifinancier.auth.service.EmailService;
@@ -31,6 +37,12 @@ public class SuiviFinancierAuthHandler {
     
     @Autowired
     PasswordRepository passwordRepository;
+    
+    @Autowired
+    SecureQuestionRepository secureQuestionRepository;
+    
+    @Autowired
+    SecureResponseRepository secureResponseRepository;
 
     @Autowired
     TokenService tokenService;
@@ -307,6 +319,139 @@ public class SuiviFinancierAuthHandler {
 		return result;
 	}
 	
+	public List<SecureQuestion> getSecureQuestions(){
+		List<SecureQuestion> listSecureQuestion = secureQuestionRepository.findByUserId(0);
+		return listSecureQuestion;
+	}
 	
+	public boolean addUserQuestionResponse(int userId, int questionId, String question, String response) {
+		boolean result = false;
+		try {
+			if(Objects.nonNull((userRepository.findById(userId)))
+					&& (secureResponseRepository.findByUserId(userId).size() < 3)) {
+				if(questionId == 0) {
+					if((secureQuestionRepository.findByUserId(userId).isEmpty())) {
+						SecureQuestion secureQuestion = new SecureQuestion();
+						secureQuestion.setQuestion(question);
+						secureQuestion.setUserId(userId);
+						secureQuestion = secureQuestionRepository.save(secureQuestion);
+
+						SecureResponse secureResponse = new SecureResponse();
+						secureResponse.setSecureQuestionId(secureQuestion.getId());
+						secureResponse.setUserId(userId);
+						secureResponse.setResponse(response);
+						secureResponse = secureResponseRepository.save(secureResponse);
+						
+						result = true;
+					}
+					
+				} else {
+					if(secureResponseRepository.findBySecureQuestionId(questionId).isEmpty()) {
+						SecureResponse secureResponse = new SecureResponse();
+						secureResponse.setSecureQuestionId(questionId);
+						secureResponse.setUserId(userId);
+						secureResponse.setResponse(response);
+						secureResponse = secureResponseRepository.save(secureResponse);
+						result = true;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = false;
+		}
+		
+		return result;
+	}
+	
+	public SecureQuestion askSecureQuestion(String email) {
+		User storedUser = userRepository.findByEmail(email);
+		SecureQuestion secureQuestion = new SecureQuestion();
+		if(Objects.nonNull(storedUser)) {
+			List<SecureResponse> listSecureResponse = secureResponseRepository.findByUserId(storedUser.getId());
+			if(!listSecureResponse.isEmpty()) {
+			    Random rand = new Random();
+			    SecureResponse randomSecureResponse = listSecureResponse.get(rand.nextInt(listSecureResponse.size()));
+			    
+			    secureQuestion = secureQuestionRepository.findById(randomSecureResponse.getSecureQuestionId()).orElse(new SecureQuestion());
+			}
+		}
+		return secureQuestion;
+	}
+	
+	public String passwordForget(String email) {
+		String tokenContext = TokenContext.PASSWORD_FORGETED.toString();
+
+		String token = "";
+		User storedUser = userRepository.findByEmail(email);
+		if((Objects.nonNull(storedUser))
+			&& (Objects.isNull(tokenRepository.findByUserId(String.valueOf(storedUser.getId()))))
+			&& (Objects.isNull(tokenRepository.findByTokenContextAndUserId(tokenContext,String.valueOf(storedUser.getId()))))) {
+			
+			token = tokenService.encryptToken(String.valueOf(storedUser.getId()), email, tokenContext);
+			Token storedToken = new Token();
+			storedToken.setToken(token);
+			storedToken.setTokenContext(tokenContext);
+			storedToken.setUserId(String.valueOf(storedUser.getId()));
+			tokenRepository.save(storedToken);
+
+			/*
+			//Envoyer un mail sur une page qui appelera ask question
+			EmailDetails emailDetails = new EmailDetails();
+			emailDetails.setRecipient(newEmail);
+			emailDetails.setSubject("change password form");
+			emailDetails.setMsgBody(token);
+			
+			emailService.sendSimpleMail(emailDetails);
+			*/
+		}
+		
+		return token;
+	}
+	
+	public boolean passowrdForgetApproved(String email, String token, int secureQuestionId, String response, String newPassword) {
+		boolean result = false;
+        Base64.Decoder decoder = Base64.getDecoder();
+        //We convert the Base64 password to utf8 password
+        newPassword = new String(decoder.decode(newPassword));
+		String tokenContext = TokenContext.PASSWORD_FORGETED.toString();
+		User storedUser = userRepository.findByEmail(email);
+		SecureResponse secureResponse = secureResponseRepository.findBySecureQuestionIdAndUserId(secureQuestionId,storedUser.getId());
+		Map<String,String> tokenDetails = tokenService.decryptToken(token);
+		Token storedToken = tokenRepository.findByTokenContextAndUserId(tokenContext, String.valueOf(storedUser.getId()));
+		Password storedPassword = passwordRepository.findByUserId(String.valueOf(storedUser.getId()));
+		
+		if(!passwordService.verifyPassword(newPassword, storedPassword.getPassword())) {
+			if( Objects.nonNull(secureResponse) && Objects.nonNull(storedUser) && Objects.nonNull(storedToken) && Objects.nonNull(storedPassword)) {
+				if(storedToken.getToken().equalsIgnoreCase(token) && ((new Date(Long.valueOf(tokenDetails.get("expiryDate")))).after(new Date()))) {
+					if(secureResponse.getResponse().equalsIgnoreCase(response)) {
+						newPassword = passwordService.hashPassword(newPassword);
+						storedPassword.setPassword(newPassword);
+						tokenRepository.delete(storedToken);
+						passwordRepository.save(storedPassword);
+						
+
+						/*
+						EmailDetails emailDetails = new EmailDetails();
+						emailDetails.setRecipient(storedUser.getEmail());
+						emailDetails.setSubject("change password confirmation");
+						emailDetails.setMsgBody("your password has been changed");
+						
+						emailService.sendSimpleMail(emailDetails);
+						*/
+						
+						result = true;
+					}
+				}
+			}
+		}
+		
+		
+		
+		
+
+		
+		return result;
+	}
 	
 }
