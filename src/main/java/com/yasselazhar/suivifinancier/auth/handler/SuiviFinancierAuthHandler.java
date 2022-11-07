@@ -21,6 +21,7 @@ import com.yasselazhar.suivifinancier.auth.repository.PasswordRepository;
 import com.yasselazhar.suivifinancier.auth.repository.SecureQuestionRepository;
 import com.yasselazhar.suivifinancier.auth.repository.SecureResponseRepository;
 import com.yasselazhar.suivifinancier.auth.repository.TokenRepository;
+import com.yasselazhar.suivifinancier.auth.repository.TypeProfileRepository;
 import com.yasselazhar.suivifinancier.auth.repository.UserRepository;
 import com.yasselazhar.suivifinancier.auth.service.EmailService;
 import com.yasselazhar.suivifinancier.auth.service.PasswordService;
@@ -43,6 +44,9 @@ public class SuiviFinancierAuthHandler {
     
     @Autowired
     SecureResponseRepository secureResponseRepository;
+    
+    @Autowired
+    TypeProfileRepository typeProfileRepository;
 
     @Autowired
     TokenService tokenService;
@@ -61,30 +65,36 @@ public class SuiviFinancierAuthHandler {
 		String tokenContext = TokenContext.PASSWORD_INIT.toString();
 		String tokenResult = "";
 		
+		
 		if(Objects.isNull(userRepository.findByEmail(newUser.getEmail()))) {
 			//Here we  gone to set the logic for the account creation
 			
-			// new account creation
-			newUser.setId(0);
-			newUser.setPassword(0);
-			newUser.setDateCreation(null);
-			newUser.setDateModification(null);
-			newUser.setActif(0);
-			newUser = userRepository.save(newUser);
-			
-			String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
-	    	newToken.setToken(token);
-	    	newToken.setTokenContext(tokenContext);
-	    	newToken.setUserId(String.valueOf(newUser.getId()));
-	    	newToken = tokenRepository.save(newToken);
-	    	
-	    	emailDetails.setSubject("Nouveau Token");
-	    	emailDetails.setMsgBody(token);
-	    	emailDetails.setRecipient("yassine.elazhar@gmail.com");
-	    	/*Nous allons envoyer le mail*/
-	    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
-	    	
-	    	tokenResult = newToken.getToken();
+			//On verifie si le type de profile existe et si il est différent de 1 (Admin)
+			if(!typeProfileRepository.findById(newUser.getTypeProfil()).isEmpty() && (newUser.getTypeProfil() != 1)) {
+				// new account creation
+				newUser.setId(0);
+				newUser.setPassword(0);
+				newUser.setDateCreation(null);
+				newUser.setDateModification(null);
+				newUser.setActif(0);
+				newUser = userRepository.save(newUser);
+				
+				String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
+		    	newToken.setToken(token);
+		    	newToken.setTokenContext(tokenContext);
+		    	newToken.setUserId(String.valueOf(newUser.getId()));
+		    	newToken = tokenRepository.save(newToken);
+		    	
+		    	emailDetails.setSubject("Nouveau Token");
+		    	emailDetails.setMsgBody(token);
+		    	emailDetails.setRecipient("yassine.elazhar@gmail.com");
+		    	/*Nous allons envoyer le mail*/
+		    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
+		    	
+		    	tokenResult = newToken.getToken();
+			} else {
+				tokenResult = "error";
+			}
 		} else {
 			// We gone to check if we have a token for this user
 			newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(newUser.getEmail()).getId()));
@@ -539,9 +549,6 @@ public class SuiviFinancierAuthHandler {
 		return token;
 	}
 	
-	
-
-	
 	public boolean reactivateProfileApproved(String token) {
 		boolean result = false;
 		try {
@@ -573,5 +580,68 @@ public class SuiviFinancierAuthHandler {
 		return result;
 	}
 	
+	public String updateTypeProfile(String email) {
+		String tokenContext = TokenContext.TYPE_PROFIL_UPDATE.toString();
+
+		String token = "";
+		User storedUser = userRepository.findByEmail(email);
+		if((Objects.nonNull(storedUser))
+			&& (Objects.isNull(tokenRepository.findByUserId(String.valueOf(storedUser.getId()))))
+			&& (Objects.isNull(tokenRepository.findByTokenContextAndUserId(tokenContext,String.valueOf(storedUser.getId()))))) {
+			
+			token = tokenService.encryptToken(String.valueOf(storedUser.getId()), email, tokenContext);
+			Token storedToken = new Token();
+			storedToken.setToken(token);
+			storedToken.setTokenContext(tokenContext);
+			storedToken.setUserId(String.valueOf(storedUser.getId()));
+			tokenRepository.save(storedToken);
+
+			/*
+			//Envoyer un mail sur une page qui appelera ask question
+			EmailDetails emailDetails = new EmailDetails();
+			emailDetails.setRecipient(email);
+			emailDetails.setSubject("update type profile");
+			emailDetails.setMsgBody(token);
+			
+			emailService.sendSimpleMail(emailDetails);
+			*/
+		}
+		
+		return token;
+	}
+	
+	public boolean updateTypeProfileApproved(String token, int typeProfile) {
+		boolean result = false;
+		try {
+			String tokenContext = TokenContext.TYPE_PROFIL_UPDATE.toString();
+			
+			Map<String,String> tokenDecrypted = tokenService.decryptToken(token);
+
+			if(!typeProfileRepository.findById(typeProfile).isEmpty()) {
+				if(tokenDecrypted.get("context").equalsIgnoreCase(tokenContext)){
+					Token storedToken = tokenRepository.findByUserId(String.valueOf(tokenDecrypted.get("userId")));
+					
+					if((Objects.nonNull(storedToken)) && (storedToken.getToken().equalsIgnoreCase(token)))  {
+						tokenRepository.delete(storedToken);
+						User storedUser = userRepository.findById(Integer.valueOf(tokenDecrypted.get("userId"))).orElse(new User());
+
+						if((new Date(Long.valueOf(tokenDecrypted.get("expiryDate")))).after(new Date())){
+			
+							if(Objects.nonNull(storedUser.getId())) {
+								storedUser.setTypeProfil(typeProfile);
+								userRepository.save(storedUser);
+							}
+							result = true;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = false;
+		}
+		
+		return result;
+	}
 	
 }

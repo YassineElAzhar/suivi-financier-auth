@@ -2,6 +2,8 @@ package com.yasselazhar.suivifinancier.auth.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -223,8 +225,6 @@ public class SuiviFinancierAuthController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
     
-    
-
     @RequestMapping(value="/reactivateProfile",method = RequestMethod.POST)
     public ResponseEntity<String> reactivateProfile(@RequestParam(value = "email")  String email){
     	String token = "";
@@ -248,5 +248,41 @@ public class SuiviFinancierAuthController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
     
+    @RequestMapping(value="/updateTypeProfile",method = RequestMethod.POST)
+    public ResponseEntity<String> updateTypeProfile(@RequestParam(value = "email")  String email){
+    	String token = "";
+    	try {
+    		token = suiviFinancierAuthHandler.updateTypeProfile(email);
+		} catch (Exception e) {
+	        return new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+    	
+        return new ResponseEntity<>(token, HttpStatus.OK);
+    }
     
+    @RequestMapping(value="/updateTypeProfileApproved",method = RequestMethod.POST)
+    public ResponseEntity<Boolean> updateTypeProfileApproved(@RequestParam(value = "token")  String token, @RequestParam(value = "typeProfile")  int typeProfile){
+    	boolean result = false;
+    	try {
+    		result = suiviFinancierAuthHandler.updateTypeProfileApproved(token,typeProfile);
+		} catch (Exception e) {
+	        return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+    
+    @RequestMapping(value = "connectionData", method = RequestMethod.GET)
+    public void connectionData( HttpServletRequest request) {
+    		//TODO : créer une table avec toutes ces données pour les sauvegarder
+    		//TODO : enregistrer aussi pour quel endpoint l'appel est fait et les params
+            System.out.println(request.getRemoteAddr());
+            System.out.println(request.getRemoteHost());
+            System.out.println(request.getRemotePort());
+            System.out.println(request.getRemoteUser());
+            System.out.println(request.getPathInfo());
+            System.out.println(request.getHeaderNames());
+            System.out.println(request.getProtocol());
+            System.out.println(request.getQueryString());
+            System.out.println(request.getRequestedSessionId());
+        }
 }
