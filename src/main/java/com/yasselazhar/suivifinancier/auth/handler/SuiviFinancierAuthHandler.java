@@ -169,6 +169,7 @@ public class SuiviFinancierAuthHandler {
 	        Base64.Decoder decoder = Base64.getDecoder();
 	        //We convert the Base64 password to utf8 password
 	        password = new String(decoder.decode(password));
+	        emailUser = new String(decoder.decode(emailUser));
 			User storedUser = userRepository.findByEmail(emailUser);
 			if(Objects.nonNull(storedUser)) {
 				int userid = storedUser.getId();

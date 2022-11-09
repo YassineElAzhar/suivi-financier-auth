@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,7 +56,8 @@ public class SuiviFinancierAuthController {
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
     }
-    
+
+    @CrossOrigin
     @RequestMapping(value="/login",method = RequestMethod.POST)
     public ResponseEntity<Boolean> login(@RequestParam(value = "emailUser")  String emailUser,@RequestParam(value = "password") String password) {
     	try {
