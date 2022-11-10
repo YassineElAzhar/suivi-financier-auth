@@ -70,7 +70,7 @@ public class SuiviFinancierAuthHandler {
 			//Here we  gone to set the logic for the account creation
 			
 			//On verifie si le type de profile existe et si il est différent de 1 (Admin)
-			if(!typeProfileRepository.findById(newUser.getTypeProfil()).isEmpty() && (newUser.getTypeProfil() != 1)) {
+			//if(!typeProfileRepository.findById(newUser.getTypeProfil()).isEmpty() && (newUser.getTypeProfil() != 1)) {
 				// new account creation
 				newUser.setId(0);
 				newUser.setPassword(0);
@@ -92,9 +92,9 @@ public class SuiviFinancierAuthHandler {
 		    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
 		    	
 		    	tokenResult = newToken.getToken();
-			} else {
+			/*} else {
 				tokenResult = "error";
-			}
+			}*/
 		} else {
 			// We gone to check if we have a token for this user
 			newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(newUser.getEmail()).getId()));
@@ -618,7 +618,7 @@ public class SuiviFinancierAuthHandler {
 			
 			Map<String,String> tokenDecrypted = tokenService.decryptToken(token);
 
-			if(!typeProfileRepository.findById(typeProfile).isEmpty()) {
+			//if(!typeProfileRepository.findById(typeProfile).isEmpty()) {
 				if(tokenDecrypted.get("context").equalsIgnoreCase(tokenContext)){
 					Token storedToken = tokenRepository.findByUserId(String.valueOf(tokenDecrypted.get("userId")));
 					
@@ -636,7 +636,7 @@ public class SuiviFinancierAuthHandler {
 						}
 					}
 				}
-			}
+			//}
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = false;
