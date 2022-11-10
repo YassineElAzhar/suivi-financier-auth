@@ -44,7 +44,7 @@ public class TokenServiceImpl implements TokenService {
 	
 
 	@Override
-	public String encryptToken(String email, String context) {
+	public String encryptToken(String userId, String email, String context) {
 		
 		String eventDate = String.valueOf(new Date().getTime());
 		
@@ -60,6 +60,7 @@ public class TokenServiceImpl implements TokenService {
 		String serializedEventDate = "";
 		String serializedExpiryDate = "";
 		String serializedContext = "";
+		String serializedUserId = "";
 		
 		String encryptedToken = "";
 
@@ -70,11 +71,13 @@ public class TokenServiceImpl implements TokenService {
 			serializedEventDate = serialize(eventDate);
 			serializedExpiryDate = serialize(expiryDate);
 			serializedContext = serialize(context);
+			serializedUserId = serialize(userId);
 			
 			map.put("email", serializedEmail);
 			map.put("context", serializedContext);
 			map.put("creationDate", serializedEventDate);
 			map.put("expiryDate", serializedExpiryDate);
+			map.put("userId", serializedUserId);
 
 			encryptedToken = Base64.getEncoder().encodeToString(map.toString().getBytes("utf-8"));
 		} catch (Exception e) {
@@ -98,6 +101,7 @@ public class TokenServiceImpl implements TokenService {
 			tokenUTF8 = tokenUTF8.replace("creationDate=", "creationDate::::");
 			tokenUTF8 = tokenUTF8.replace("email=", "email::::");
 			tokenUTF8 = tokenUTF8.replace("expiryDate=", "expiryDate::::");
+			tokenUTF8 = tokenUTF8.replace("userId=", "userId::::");
 			tokenUTF8 = tokenUTF8.replace("\r", "");
 			tokenUTF8 = tokenUTF8.replace("\n", "");
 			tokenUTF8 = tokenUTF8.replace("\r\\n", "");
@@ -109,24 +113,28 @@ public class TokenServiceImpl implements TokenService {
 	        String[] val1Split = tokenSplit[1].split("::::");
 	        String[] val2Split = tokenSplit[2].split("::::");
 	        String[] val3Split = tokenSplit[3].split("::::");
+	        String[] val4Split = tokenSplit[4].split("::::");
 	        
 
 	        String val0ClearText = deserialize(val0Split[1], new TypeToken<String>() {private static final long serialVersionUID = 1L;}.getType());
 	        String val1ClearText = deserialize(val1Split[1], new TypeToken<String>() {private static final long serialVersionUID = 2L;}.getType());
 	        String val2ClearText = deserialize(val2Split[1], new TypeToken<String>() {private static final long serialVersionUID = 3L;}.getType());
 	        String val3ClearText = deserialize(val3Split[1], new TypeToken<String>() {private static final long serialVersionUID = 4L;}.getType());
+	        String val4ClearText = deserialize(val4Split[1], new TypeToken<String>() {private static final long serialVersionUID = 5L;}.getType());
 
 	        mapTokenDecrypted.put(val0Split[0], val0ClearText);
 	        mapTokenDecrypted.put(val1Split[0], val1ClearText);
 	        mapTokenDecrypted.put(val2Split[0], val2ClearText);
 	        mapTokenDecrypted.put(val3Split[0], val3ClearText);
+	        mapTokenDecrypted.put(val4Split[0], val4ClearText);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 	        mapTokenDecrypted.put("context", "error");
 	        mapTokenDecrypted.put("creationDate", "1900-01-01");
 	        mapTokenDecrypted.put("expiryDate", "1900-01-01");
 	        mapTokenDecrypted.put("email", "error");
+	        mapTokenDecrypted.put("userId", "0");
 		}
 		return mapTokenDecrypted;
 	}

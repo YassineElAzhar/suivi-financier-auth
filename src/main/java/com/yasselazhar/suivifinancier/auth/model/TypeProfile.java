@@ -13,20 +13,18 @@ import java.util.Date;
  * Created by Yassine EL-AZHAR
  */
 @Entity
-@Table(name = "password")
+@Table(name = "type_profile")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"date_creation", "date_modification"},
         allowGetters = true)
-public class Password {
+public class TypeProfile {
+	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @NotBlank
-    private String userId;
-
-    @NotBlank
-    private String password;
+    private String typeProfile;
 
 
     @Column(nullable = false, updatable = false)
@@ -47,20 +45,12 @@ public class Password {
 		this.id = id;
 	}
 
-	public String getUserId() {
-		return userId;
+	public String getTypeProfile() {
+		return typeProfile;
 	}
 
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
+	public void setTypeProfile(String typeProfile) {
+		this.typeProfile = typeProfile;
 	}
 
 	public Date getDateCreation() {
@@ -81,10 +71,8 @@ public class Password {
 
 	@Override
 	public String toString() {
-		return "Password [id=" + id + ", userId=" + userId + ", password=" + password + ", dateCreation="
-				+ dateCreation + ", dateModification=" + dateModification + "]";
+		return "TypeProfile [id=" + id + ", typeProfile=" + typeProfile + ", dateCreation=" + dateCreation
+				+ ", dateModification=" + dateModification + "]";
 	}
-
-    
 
 }

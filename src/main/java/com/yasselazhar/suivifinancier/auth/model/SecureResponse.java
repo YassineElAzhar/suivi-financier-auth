@@ -13,21 +13,22 @@ import java.util.Date;
  * Created by Yassine EL-AZHAR
  */
 @Entity
-@Table(name = "password")
+@Table(name = "secure_response")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"date_creation", "date_modification"},
         allowGetters = true)
-public class Password {
+public class SecureResponse {
+	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotBlank
-    private String userId;
+    private int userId;
+
+    private int secureQuestionId;
 
     @NotBlank
-    private String password;
-
+    private String response;
 
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -47,20 +48,28 @@ public class Password {
 		this.id = id;
 	}
 
-	public String getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 
-	public void setUserId(String userId) {
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
 
-	public String getPassword() {
-		return password;
+	public int getSecureQuestionId() {
+		return secureQuestionId;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setSecureQuestionId(int secureQuestionId) {
+		this.secureQuestionId = secureQuestionId;
+	}
+
+	public String getResponse() {
+		return response;
+	}
+
+	public void setResponse(String response) {
+		this.response = response;
 	}
 
 	public Date getDateCreation() {
@@ -81,10 +90,9 @@ public class Password {
 
 	@Override
 	public String toString() {
-		return "Password [id=" + id + ", userId=" + userId + ", password=" + password + ", dateCreation="
-				+ dateCreation + ", dateModification=" + dateModification + "]";
+		return "SecureResponse [id=" + id + ", userId=" + userId + ", secureQuestionId=" + secureQuestionId
+				+ ", response=" + response + ", dateCreation=" + dateCreation + ", dateModification=" + dateModification
+				+ "]";
 	}
-
     
-
 }
