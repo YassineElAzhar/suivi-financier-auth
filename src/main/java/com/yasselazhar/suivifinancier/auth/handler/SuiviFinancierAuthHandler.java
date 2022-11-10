@@ -179,6 +179,7 @@ public class SuiviFinancierAuthHandler {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			result = false;
 		}
 		return result;

@@ -5,7 +5,7 @@ DROP TABLE secure_question;
 DROP TABLE secure_response;
 DROP TABLE token;
 DROP TABLE type_profile;
-DROP TABLE user;
+DROP TABLE "user";
 
 
 
@@ -13,7 +13,7 @@ DROP TABLE user;
 /*We create tables*/
 CREATE TABLE password (
   id serial PRIMARY KEY,
-  user_id int NOT NULL,
+  user_id varchar(8) NOT NULL,
   password varchar(128) NOT NULL,
   date_creation date NOT NULL,
   date_modification date NOT NULL
@@ -45,9 +45,9 @@ CREATE TABLE secure_response (
 /*We create tables*/
 CREATE TABLE token (
   id serial PRIMARY KEY,
-  user_id int NOT NULL,
+  user_id varchar(8) NOT NULL,
   token_context varchar(128) NOT NULL,
-  token varchar(128) NOT NULL,
+  token text NOT NULL,
   date_creation date NOT NULL,
   date_modification date NOT NULL
 );
@@ -67,7 +67,7 @@ CREATE TABLE "user" (
   nom varchar(32) NOT NULL,
   prenom varchar(32) NOT NULL,
   email varchar(128) NOT NULL,
-  date_naissance date NOT NULL,
+  date_naissance varchar(32) NOT NULL,
   adresse varchar(128) NOT NULL,
   ville varchar(64) NOT NULL,
   zip varchar(16) NOT NULL,
