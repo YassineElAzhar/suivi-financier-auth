@@ -108,9 +108,9 @@ public class SuiviFinancierAuthHandler {
 			} else {
 				tokenResult = "error 02";
 			}
-			
+		
 		}
-		tokenResult = userRepository.findByEmail(newUser.getEmail()).toString();
+		
 		return tokenResult;
 	}
 
