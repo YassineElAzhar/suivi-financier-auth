@@ -66,7 +66,7 @@ public class SuiviFinancierAuthHandler {
 		String tokenResult = "";
 		
 		
-		if(Objects.isNull(userRepository.findByEmail(newUser.getEmail()))) {
+		if(userRepository.findByEmail(newUser.getEmail()) == null) {
 			//Here we  gone to set the logic for the account creation
 			
 			//On verifie si le type de profile existe et si il est différent de 1 (Admin)
