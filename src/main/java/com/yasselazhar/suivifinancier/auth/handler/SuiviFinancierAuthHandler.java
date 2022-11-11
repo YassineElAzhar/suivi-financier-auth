@@ -80,7 +80,6 @@ public class SuiviFinancierAuthHandler {
 				newUser = userRepository.save(newUser);
 				
 				String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
-				token = "test";
 		    	newToken.setToken(token);
 		    	newToken.setTokenContext(tokenContext);
 		    	newToken.setUserId(String.valueOf(newUser.getId()));
