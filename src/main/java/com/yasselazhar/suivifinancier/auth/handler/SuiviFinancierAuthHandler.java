@@ -64,56 +64,52 @@ public class SuiviFinancierAuthHandler {
 		EmailDetails emailDetails = new EmailDetails();
 		String tokenContext = TokenContext.PASSWORD_INIT.toString();
 		String tokenResult = "";
-		try {
-
-			if(userRepository.findByEmail(newUser.getEmail()) == null) {
-				//Here we  gone to set the logic for the account creation
-				
-				//On verifie si le type de profile existe et si il est différent de 1 (Admin)
-				//if(!typeProfileRepository.findById(newUser.getTypeProfil()).isEmpty() && (newUser.getTypeProfil() != 1)) {
-					// new account creation
-					newUser.setId(0);
-					newUser.setPassword(0);
-					newUser.setDateCreation(null);
-					newUser.setDateModification(null);
-					newUser.setActif(0);
-					newUser = userRepository.save(newUser);
-					
-					String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
-			    	newToken.setToken(token);
-			    	newToken.setTokenContext(tokenContext);
-			    	newToken.setUserId(String.valueOf(newUser.getId()));
-			    	newToken = tokenRepository.save(newToken);
-			    	
-			    	emailDetails.setSubject("Nouveau Token");
-			    	emailDetails.setMsgBody(token);
-			    	emailDetails.setRecipient("yassine.elazhar@gmail.com");
-			    	/*Nous allons envoyer le mail*/
-			    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
-			    	
-			    	tokenResult = newToken.getToken();
-				/*} else {
-					tokenResult = "error";
-				}*/
-			} else {
-				// We gone to check if we have a token for this user
-				newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(newUser.getEmail()).getId()));
-				if((Objects.nonNull(newToken)) && (newToken.getTokenContext().equalsIgnoreCase(tokenContext))){
-					Map<String,String> tokenDetails = tokenService.decryptToken(newToken.getToken());
-					if((new Date(Long.valueOf(tokenDetails.get("expiryDate")))).before(new Date())) {
-						tokenResult = newToken.getToken();
-					} else {
-						tokenResult = "error";
-					}
-				} else {
-					tokenResult = "error";
-				}
-				
-			}	
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		
+		
+		if(Objects.isNull(userRepository.findByEmail(newUser.getEmail()))) {
+			//Here we  gone to set the logic for the account creation
 			
+			//On verifie si le type de profile existe et si il est différent de 1 (Admin)
+			//if(!typeProfileRepository.findById(newUser.getTypeProfil()).isEmpty() && (newUser.getTypeProfil() != 1)) {
+				// new account creation
+				newUser.setId(0);
+				newUser.setPassword(0);
+				newUser.setDateCreation(null);
+				newUser.setDateModification(null);
+				newUser.setActif(0);
+				newUser = userRepository.save(newUser);
+				
+				String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
+		    	newToken.setToken(token);
+		    	newToken.setTokenContext(tokenContext);
+		    	newToken.setUserId(String.valueOf(newUser.getId()));
+		    	newToken = tokenRepository.save(newToken);
+		    	
+		    	emailDetails.setSubject("Nouveau Token");
+		    	emailDetails.setMsgBody(token);
+		    	emailDetails.setRecipient("yassine.elazhar@gmail.com");
+		    	/*Nous allons envoyer le mail*/
+		    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
+		    	
+		    	tokenResult = newToken.getToken();
+			/*} else {
+				tokenResult = "error";
+			}*/
+		} else {
+			// We gone to check if we have a token for this user
+			newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(newUser.getEmail()).getId()));
+			if((Objects.nonNull(newToken)) && (newToken.getTokenContext().equalsIgnoreCase(tokenContext))){
+				Map<String,String> tokenDetails = tokenService.decryptToken(newToken.getToken());
+				if((new Date(Long.valueOf(tokenDetails.get("expiryDate")))).before(new Date())) {
+					tokenResult = newToken.getToken();
+				} else {
+					tokenResult = "error 01";
+				}
+			} else {
+				tokenResult = "error 02";
+			}
+			
+		}		
 		return tokenResult;
 	}
 
