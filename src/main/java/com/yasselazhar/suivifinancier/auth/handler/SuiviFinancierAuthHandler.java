@@ -72,26 +72,31 @@ public class SuiviFinancierAuthHandler {
 			//On verifie si le type de profile existe et si il est différent de 1 (Admin)
 			//if(!typeProfileRepository.findById(newUser.getTypeProfil()).isEmpty() && (newUser.getTypeProfil() != 1)) {
 				// new account creation
-				newUser.setId(0);
-				newUser.setPassword(0);
-				newUser.setDateCreation(null);
-				newUser.setDateModification(null);
-				newUser.setActif(0);
-				newUser = userRepository.save(newUser);
-				
-				String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
-		    	newToken.setToken(token);
-		    	newToken.setTokenContext(tokenContext);
-		    	newToken.setUserId(String.valueOf(newUser.getId()));
-		    	newToken = tokenRepository.save(newToken);
-		    	
-		    	emailDetails.setSubject("Nouveau Token");
-		    	emailDetails.setMsgBody(token);
-		    	emailDetails.setRecipient("yassine.elazhar@gmail.com");
-		    	/*Nous allons envoyer le mail*/
-		    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
-		    	
-		    	tokenResult = newToken.getToken();
+		try {
+
+			newUser.setId(0);
+			newUser.setPassword(0);
+			newUser.setDateCreation(null);
+			newUser.setDateModification(null);
+			newUser.setActif(0);
+			newUser = userRepository.save(newUser);
+			
+			String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);
+	    	newToken.setToken(token);
+	    	newToken.setTokenContext(tokenContext);
+	    	newToken.setUserId(String.valueOf(newUser.getId()));
+	    	newToken = tokenRepository.save(newToken);
+	    	
+	    	emailDetails.setSubject("Nouveau Token");
+	    	emailDetails.setMsgBody(token);
+	    	emailDetails.setRecipient("yassine.elazhar@gmail.com");
+	    	/*Nous allons envoyer le mail*/
+	    	//String statusEmail = emailService.sendSimpleMail(emailDetails);
+	    	
+	    	tokenResult = newToken.getToken();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 			/*} else {
 				tokenResult = "error";
 			}*/
