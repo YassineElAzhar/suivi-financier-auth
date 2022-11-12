@@ -66,7 +66,7 @@ public class SuiviFinancierAuthHandler {
 		String tokenResult = "";
 		
 		
-		if(Objects.isNull(userRepository.findByEmail(newUser.getEmail()).getId())) {
+		//if(Objects.isNull(userRepository.findByEmail(newUser.getEmail()).getId())) {
 			//Here we  gone to set the logic for the account creation
 			
 			//On verifie si le type de profile existe et si il est différent de 1 (Admin)
@@ -95,7 +95,7 @@ public class SuiviFinancierAuthHandler {
 			/*} else {
 				tokenResult = "error";
 			}*/
-		} else {
+		/*} else {
 			// We gone to check if we have a token for this user
 			newToken = tokenRepository.findByUserId(String.valueOf(userRepository.findByEmail(newUser.getEmail()).getId()));
 			if((Objects.nonNull(newToken)) && (newToken.getTokenContext().equalsIgnoreCase(tokenContext))){
@@ -109,7 +109,7 @@ public class SuiviFinancierAuthHandler {
 				tokenResult = "error 02";
 			}
 		
-		}
+		}*/
 		
 		return tokenResult;
 	}

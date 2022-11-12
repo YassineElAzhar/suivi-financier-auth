@@ -35,7 +35,7 @@ CREATE TABLE secure_response (
   id serial PRIMARY KEY,
   user_id int NOT NULL,
   secure_question_id int NOT NULL,
-  response varchar(130) NOT NULL,
+  response text NOT NULL,
   date_creation date NOT NULL,
   date_modification date NOT NULL,
   question varchar(255) DEFAULT NULL
@@ -68,7 +68,7 @@ CREATE TABLE "user" (
   prenom varchar(32) NOT NULL,
   email varchar(128) NOT NULL,
   date_naissance varchar(32) NOT NULL,
-  adresse varchar(128) NOT NULL,
+  adresse text NOT NULL,
   ville varchar(64) NOT NULL,
   zip varchar(16) NOT NULL,
   type_profil int NOT NULL,
