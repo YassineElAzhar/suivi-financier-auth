@@ -30,7 +30,6 @@ public class Token {
     private String tokenContext;
 
     @NotBlank
-    @Column(name = "token", length = 1024)
     private String token;
 
 
