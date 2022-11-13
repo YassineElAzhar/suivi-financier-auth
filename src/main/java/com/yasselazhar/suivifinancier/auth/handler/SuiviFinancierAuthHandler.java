@@ -85,7 +85,7 @@ public class SuiviFinancierAuthHandler {
 	    	newToken.setToken(token);
 	    	newToken.setTokenContext(tokenContext);
 	    	newToken.setUserId(String.valueOf(newUser.getId()));
-	    	newToken = tokenRepository.save(newToken);
+	    	//newToken = tokenRepository.save(newToken);
 	    	
 	    	emailDetails.setSubject("Nouveau Token");
 	    	emailDetails.setMsgBody(token);
