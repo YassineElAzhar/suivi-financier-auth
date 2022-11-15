@@ -16,6 +16,7 @@ import com.yasselazhar.suivifinancier.auth.model.Password;
 import com.yasselazhar.suivifinancier.auth.model.SecureQuestion;
 import com.yasselazhar.suivifinancier.auth.model.SecureResponse;
 import com.yasselazhar.suivifinancier.auth.model.Token;
+import com.yasselazhar.suivifinancier.auth.model.TypeProfile;
 import com.yasselazhar.suivifinancier.auth.model.User;
 import com.yasselazhar.suivifinancier.auth.repository.PasswordRepository;
 import com.yasselazhar.suivifinancier.auth.repository.SecureQuestionRepository;
@@ -70,7 +71,7 @@ public class SuiviFinancierAuthHandler {
 			//Here we  gone to set the logic for the account creation
 			
 			//On verifie si le type de profile existe et si il est différent de 1 (Admin)
-			if(!typeProfileRepository.findById(newUser.getTypeProfil()).isEmpty() && (newUser.getTypeProfil() != 1)) {
+			if(!typeProfileRepository.findById(Integer.valueOf(newUser.getTypeProfil())).isEmpty() && (newUser.getTypeProfil() != "1")) {
 				// new account creation
 				newUser.setId(0);
 				newUser.setPassword(0);
@@ -187,7 +188,8 @@ public class SuiviFinancierAuthHandler {
 	public User getUser(String user) {
 		User storedUser = new User();
 		storedUser = userRepository.findByEmail(user);
-		
+		TypeProfile typeProfile = typeProfileRepository.findById(Integer.valueOf(storedUser.getTypeProfil())).orElse(new TypeProfile());
+		storedUser.setTypeProfil(typeProfile.getTypeProfile());
 		//we hide some values
 		storedUser.setPassword(0);
 		storedUser.setDateCreation(null);
@@ -611,14 +613,14 @@ public class SuiviFinancierAuthHandler {
 		return token;
 	}
 	
-	public boolean updateTypeProfileApproved(String token, int typeProfile) {
+	public boolean updateTypeProfileApproved(String token, String typeProfile) {
 		boolean result = false;
 		try {
 			String tokenContext = TokenContext.TYPE_PROFIL_UPDATE.toString();
 			
 			Map<String,String> tokenDecrypted = tokenService.decryptToken(token);
 
-			if(!typeProfileRepository.findById(typeProfile).isEmpty()) {
+			if(!typeProfileRepository.findById(Integer.valueOf(typeProfile)).isEmpty()) {
 				if(tokenDecrypted.get("context").equalsIgnoreCase(tokenContext)){
 					Token storedToken = tokenRepository.findByUserId(String.valueOf(tokenDecrypted.get("userId")));
 					

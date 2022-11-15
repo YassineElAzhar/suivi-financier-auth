@@ -44,7 +44,7 @@ public class User {
     @NotBlank
     private String zip;
 
-    private int typeProfil;
+    private String typeProfil;
 
     private int actif;
     
@@ -125,11 +125,11 @@ public class User {
 		this.zip = zip;
 	}
 
-	public int getTypeProfil() {
+	public String getTypeProfil() {
 		return typeProfil;
 	}
 
-	public void setTypeProfil(int typeProfil) {
+	public void setTypeProfil(String typeProfil) {
 		this.typeProfil = typeProfil;
 	}
 

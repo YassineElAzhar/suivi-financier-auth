@@ -68,6 +68,7 @@ public class SuiviFinancierAuthController {
 		}
     }
 
+    @CrossOrigin
     @GetMapping("/getUser/{email}")
     public ResponseEntity<User> getUser(@PathVariable(value = "email") String email) {
     	try {
@@ -263,7 +264,7 @@ public class SuiviFinancierAuthController {
     }
     
     @RequestMapping(value="/updateTypeProfileApproved",method = RequestMethod.POST)
-    public ResponseEntity<Boolean> updateTypeProfileApproved(@RequestParam(value = "token")  String token, @RequestParam(value = "typeProfile")  int typeProfile){
+    public ResponseEntity<Boolean> updateTypeProfileApproved(@RequestParam(value = "token")  String token, @RequestParam(value = "typeProfile")  String typeProfile){
     	boolean result = false;
     	try {
     		result = suiviFinancierAuthHandler.updateTypeProfileApproved(token,typeProfile);
