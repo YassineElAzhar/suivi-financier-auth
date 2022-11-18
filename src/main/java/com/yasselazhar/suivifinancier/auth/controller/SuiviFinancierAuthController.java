@@ -114,6 +114,7 @@ public class SuiviFinancierAuthController {
 		}
     }
 
+    @CrossOrigin
     @RequestMapping(value="/updateEmail",method = RequestMethod.POST)
     public ResponseEntity<String> updateEmail(
     		@RequestParam(value = "userId")  int userId, 
