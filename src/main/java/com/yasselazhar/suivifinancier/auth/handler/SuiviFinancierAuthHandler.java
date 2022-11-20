@@ -78,6 +78,8 @@ public class SuiviFinancierAuthHandler {
 				newUser.setDateCreation(null);
 				newUser.setDateModification(null);
 				newUser.setActif(0);
+				//TODO: Nous devrions enregister l'url base dans un fichier properties
+				newUser.setPictureUrl("http://localhost:7070/mock-data/img/"+newUser.getEmail()+".jpg");
 				newUser = userRepository.save(newUser);
 				
 				String token = tokenService.encryptToken(String.valueOf(newUser.getId()), newUser.getEmail(), tokenContext);

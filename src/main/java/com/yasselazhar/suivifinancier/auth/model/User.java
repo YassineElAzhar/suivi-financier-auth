@@ -50,6 +50,8 @@ public class User {
     
     private int password;
 
+    private String pictureUrl;
+
 
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -149,6 +151,14 @@ public class User {
 		this.password = password;
 	}
 
+	public String getPictureUrl() {
+		return pictureUrl;
+	}
+
+	public void setPictureUrl(String pictureUrl) {
+		this.pictureUrl = pictureUrl;
+	}
+
 	public Date getDateCreation() {
 		return dateCreation;
 	}
@@ -169,7 +179,7 @@ public class User {
 	public String toString() {
 		return "User [id=" + id + ", nom=" + nom + ", prenom=" + prenom + ", email=" + email
 				+ ", dateNaissance=" + dateNaissance + ", adresse=" + adresse + ", ville=" + ville + ", zip=" + zip
-				+ ", typeProfil=" + typeProfil + ", actif=" + actif + ", password=" + password + ", dateCreation=" + dateCreation
+				+ ", typeProfil=" + typeProfil + ", actif=" + actif + ", password=" + password + ", pictureUrl=" + pictureUrl + ", dateCreation=" + dateCreation
 				+ ", dateModification=" + dateModification + "]";
 	}
     
